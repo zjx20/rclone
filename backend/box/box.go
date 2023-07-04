@@ -27,7 +27,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/rclone/rclone/backend/box/api"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config"
@@ -77,7 +76,7 @@ var (
 )
 
 type boxCustomClaims struct {
-	jwt.RegisteredClaims
+	jwtutil.StandardClaims
 	BoxSubType string `json:"box_sub_type,omitempty"`
 }
 
@@ -206,12 +205,12 @@ func getClaims(boxConfig *api.ConfigJSON, boxSubType string) (claims *boxCustomC
 	}
 
 	claims = &boxCustomClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ID:        val,
+		StandardClaims: jwtutil.StandardClaims{
+			Id:        val,
 			Issuer:    boxConfig.BoxAppSettings.ClientID,
 			Subject:   boxConfig.EnterpriseID,
-			Audience:  jwt.ClaimStrings{tokenURL},
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 45)),
+			Audience:  tokenURL,
+			ExpiresAt: time.Now().Add(time.Second * 45).Unix(),
 		},
 		BoxSubType: boxSubType,
 	}
